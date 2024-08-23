@@ -31,9 +31,9 @@ listed below:
 - **QGraphicsPixmapItem**
 - **QGraphicsPathItem**
 
-*We will add items such as QGraphicsSvgItem and QGraphicsGroupItem in future updates. 
-For now, `BeautifulPancakeSerializer` and `BeautifulPancakeDeserializer` have methods 
-that can make implementing these items yourself easy.*
+*We will add items such as QGraphicsGroupItem in future updates, you will have to implement QGraphicsSvgItem yourself,
+as there is no real way to obtain svg data without subclassing the item.  For now, `BeautifulPancakeSerializer` and 
+`BeautifulPancakeDeserializer` have methods that can make implementing these items yourself easy.*
 
 ## Full demo
 ```
