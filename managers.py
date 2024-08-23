@@ -1,6 +1,7 @@
 from imports import *
 
-class SceneManager:
+
+class BeautifulPancakeCreator:
     def __init__(self, scene: QGraphicsScene, parent: QMainWindow, app_name='', app_extension=''):
         self.scene = scene
         self.parent = parent
@@ -8,12 +9,48 @@ class SceneManager:
         self.app_name = app_name
         self.app_extension = app_extension
 
+        self.serializer = BeautifulPancakeSerializer(self.scene)
+        self.deserializer = BeautifulPancakeDeserializer(self.scene)
+
     def reset_to_default_scene(self):
         self.scene.clear()
         self.filename = 'Untitled'
         self.parent.setWindowTitle(f'{self.filename} - {self.app_name}')
 
-    def load(self, parent):
+    def save(self):
+        try:
+            if self.filename != 'Untitled':
+                with open(self.filename, 'wb') as f:
+                    pickle.dump(self.serializer.serialize_items(), f)
+                    self.parent.setWindowTitle(f'{os.path.basename(self.filename)} - {self.app_name}')
+
+            else:
+                self.saveas()
+
+        except Exception as e:
+            QMessageBox.critical(self.parent, 'Open File Error', f'Error saving scene: {e}', QMessageBox.Ok)
+
+    def saveas(self):
+        filename, _ = QFileDialog.getSaveFileName(self.parent, 'Save As', '',
+                                                  f'{self.app_name} files (*{self.app_extension})')
+
+        if filename:
+            try:
+                with open(filename, 'wb') as f:
+                    pickle.dump(self.serializer.serialize_items(), f)
+
+                    self.filename = filename
+                    self.parent.setWindowTitle(f'{os.path.basename(self.filename)} - {self.app_name}')
+
+                    return True
+
+            except Exception as e:
+                print(e)
+
+        else:
+            return False
+
+    def load(self):
         try:
             filename, _ = QFileDialog.getOpenFileName(self.parent, 'Open File', '',
                                                       f'{self.app_name} files (*{self.app_extension})')
@@ -23,10 +60,10 @@ class SceneManager:
 
                 with open(filename, 'rb') as f:
                     items_data = pickle.load(f)
-                    self.deserialize_items(items_data)
+                    self.deserializer.deserialize_items(items_data)
 
                     self.filename = filename
-                    parent.setWindowTitle(f'{os.path.basename(self.filename)} - MPRUN')
+                    self.parent.setWindowTitle(f'{os.path.basename(self.filename)} - MPRUN')
 
 
         except Exception as e:
@@ -37,16 +74,16 @@ class SceneManager:
 
             print(e)
 
-    def load_from_file(self, filename, parent):
+    def load_from_file(self, filename: str):
         try:
             self.scene.clear()
 
             with open(filename, 'rb') as f:
                 items_data = pickle.load(f)
-                self.deserialize_items(items_data)
+                self.deserializer.deserialize_items(items_data)
 
                 self.filename = filename
-                parent.setWindowTitle(f'{os.path.basename(self.filename)} - {self.app_name}')
+                self.parent.setWindowTitle(f'{os.path.basename(self.filename)} - {self.app_name}')
 
         except Exception as e:
             QMessageBox.critical(self.parent,
@@ -56,13 +93,71 @@ class SceneManager:
 
             print(e)
 
+class BeautifulPancakeSerializer:
+    def __init__(self, scene):
+        self.scene = scene
+
     def serialize_items(self):
         items_data = []
 
         for item in self.scene.items():
-            pass
+            item_data = self.serialize_item_attributes(item)
+
+            if isinstance(item, QGraphicsRectItem):
+                item_data.append({
+                    'rect': self.serialize_rect(item.rect()),
+                    'pen': self.serialize_pen(item.pen()),
+                    'brush': self.serialize_brush(item.brush())
+                })
+            elif isinstance(item, QGraphicsEllipseItem):
+                item_data.append({
+                    'rect': self.serialize_rect(item.rect()),
+                    'pen': self.serialize_pen(item.pen()),
+                    'brush': self.serialize_brush(item.brush())
+                })
+            elif isinstance(item, QGraphicsLineItem):
+                item_data.append({
+                    'line': self.serialize_line(item.line()),
+                    'pen': self.serialize_pen(item.pen())
+                })
+            elif isinstance(item, QGraphicsTextItem):
+                item_data.append({
+                    'text': item.toPlainText(),
+                    'font': self.serialize_font(item.font()),
+                    'defaultTextColor': self.serialize_color(item.defaultTextColor())
+                })
+            elif isinstance(item, QGraphicsPixmapItem):
+                item_data.append({
+                    'pixmap': item.pixmap().toImage().bits().asstring(
+                        item.pixmap().width() * item.pixmap().height() * 4)
+                    # Example serialization, may need a better approach
+                })
+            elif isinstance(item, QGraphicsPathItem):
+                item_data.append({
+                    'path': self.serialize_path(item.path()),
+                    'pen': self.serialize_pen(item.pen()),
+                    'brush': self.serialize_brush(item.brush())
+                })
+
+            items_data.append(item_data)
 
         return items_data
+
+    def serialize_rect(self, rect: QRectF):
+        return {
+            'x': rect.x(),
+            'y': rect.y(),
+            'width': rect.width(),
+            'height': rect.height()
+        }
+
+    def serialize_line(self, line: QLineF):
+        return {
+            'x1': line.x1(),
+            'y1': line.y1(),
+            'x2': line.x2(),
+            'y2': line.y2()
+        }
 
     def serialize_item_attributes(self, item):
         return [{
@@ -138,9 +233,57 @@ class SceneManager:
                 elements.append({'type': 'curveTo', 'x': element.x, 'y': element.y})
         return elements
 
+class BeautifulPancakeDeserializer:
+    def __init__(self, scene):
+        self.scene = scene
+
     def deserialize_items(self, items_data):
+        items = []
+
         for item_data in items_data:
-            pass
+            base_attributes = item_data[0]
+            transform = self.deserialize_transform(base_attributes['transform'])
+            item = None
+
+            if 'rect' in item_data[1]:
+                item = QGraphicsRectItem(self.deserialize_rect(item_data[1]['rect']))
+                item.setPen(self.deserialize_pen(item_data[1]['pen']))
+                item.setBrush(self.deserialize_brush(item_data[1]['brush']))
+            elif 'line' in item_data[1]:
+                item = QGraphicsLineItem(self.deserialize_line(item_data[1]['line']))
+                item.setPen(self.deserialize_pen(item_data[1]['pen']))
+            elif 'text' in item_data[1]:
+                item = QGraphicsTextItem(item_data[1]['text'])
+                item.setFont(self.deserialize_font(item_data[1]['font']))
+                item.setDefaultTextColor(self.deserialize_color(item_data[1]['defaultTextColor']))
+            elif 'pixmap' in item_data[1]:
+                pixmap = QPixmap()
+                pixmap.loadFromData(item_data[1]['pixmap'])
+                item = QGraphicsPixmapItem(pixmap)
+            elif 'path' in item_data[1]:
+                item = QGraphicsPathItem(self.deserialize_path(item_data[1]['path']))
+                item.setPen(self.deserialize_pen(item_data[1]['pen']))
+                item.setBrush(self.deserialize_brush(item_data[1]['brush']))
+
+            if item:
+                item.setPos(base_attributes['x'], base_attributes['y'])
+                item.setRotation(base_attributes['rotation'])
+                item.setTransformOriginPoint(self.deserialize_point(base_attributes['transformorigin']))
+                item.setScale(base_attributes['scale'])
+                item.setZValue(base_attributes['zval'])
+                item.setVisible(base_attributes['visible'])
+                item.setTransform(transform)
+                item.setToolTip(base_attributes['name'])
+                self.scene.addItem(item)
+                items.append(item)
+
+        return items
+
+    def deserialize_rect(self, data):
+        return QRectF(data['x'], data['y'], data['width'], data['height'])
+
+    def deserialize_line(self, data):
+        return QLineF(data['x1'], data['y1'], data['x2'], data['y2'])
 
     def deserialize_color(self, color):
         return QColor(color['red'], color['green'], color['blue'], color['alpha'])
@@ -181,28 +324,7 @@ class SceneManager:
     def deserialize_point(self, data):
         return QPointF(data['x'], data['y'])
 
-    def deserialize_text_item(self, data):
-        text_item = CustomTextItem(data['text'])
-        text_item.setFont(self.deserialize_font(data['font']))
-        text_item.setDefaultTextColor(self.deserialize_color(data['color']))
-        text_item.locked = data['locked']
-
-        for attr in data['attr']:
-            text_item.setTransformOriginPoint(self.deserialize_point(attr['transformorigin']))
-            text_item.setRotation(attr['rotation'])
-            text_item.setTransform(self.deserialize_transform(attr['transform']))
-            text_item.setScale(attr['scale'])
-            text_item.setPos(attr['x'], attr['y'])
-            text_item.setToolTip(attr['name'])
-            text_item.setZValue(attr['zval'])
-            text_item.setVisible(attr['visible'])
-
-        if data.get('markdown', True):
-            text_item.toMarkdown()
-
-        return text_item
-
-    def deserialize_path_item(self, data):
+    def deserialize_path(self, data):
         sub_path = QPainterPath()
         for element in data['elements']:
             if element['type'] == 'moveTo':
@@ -217,35 +339,4 @@ class SceneManager:
                                  element['x'],
                                  element['y'])
 
-        path_item = CustomPathItem(sub_path)
-        path_item.setPen(self.deserialize_pen(data['pen']))
-        path_item.setBrush(self.deserialize_brush(data['brush']))
-
-        for attr in data['attr']:
-            path_item.setTransformOriginPoint(self.deserialize_point(attr['transformorigin']))
-            path_item.setRotation(attr['rotation'])
-            path_item.setTransform(self.deserialize_transform(attr['transform']))
-            path_item.setScale(attr['scale'])
-            path_item.setPos(attr['x'], attr['y'])
-            path_item.setToolTip(attr['name'])
-            path_item.setZValue(attr['zval'])
-            path_item.setVisible(attr['visible'])
-
-        if data.get('smooth', True):
-            path_item.smooth = True
-
-        else:
-            path_item.smooth = False
-
-        if data.get('addtext', True):
-            path_item.add_text = True
-            path_item.setTextAlongPath(data['textalongpath'])
-            path_item.setTextAlongPathColor(self.deserialize_color(data['textcolor']))
-            path_item.setTextAlongPathFont(self.deserialize_font(data['textfont']))
-            path_item.setTextAlongPathSpacingFromPath(data['textspacing'])
-            path_item.setTextAlongPathFromBeginning(data['starttextfrombeginning'])
-
-        else:
-            path_item.add_text = False
-
-        return path_item
+        return sub_path
