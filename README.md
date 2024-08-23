@@ -1,5 +1,5 @@
 # Beautiful Pancakes
-***The official QGraphicsScene custom file writing/reading framework of MP Software based on MPRUN's `SceneManager`***
+***The official QGraphicsScene custom file writing/reading framework of MP Software based on MPRUN's SceneManager class***
 
 ## Usage
 1. Clone the repository to your project via 
