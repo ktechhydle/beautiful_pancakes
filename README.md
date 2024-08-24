@@ -13,6 +13,7 @@
 - `app_extension`: The file extension of your app (for example, MPRUN has the `.mp` file extension)
 
 4. Once you have initialized the class correctly, use it's respective methods as you require (`load`, `save`, etc.)
+5. We offer two versions of `BeautifulPancakeCreator`, PyQt5 and PySide6. Use whatever one your project requires.
 
 ## Methods
 Mentioned above, there are methods for loading, saving, saving as, and more. A full list of methods is 
@@ -40,7 +41,9 @@ as there is no real way to obtain svg data without subclassing the item.  For no
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from beautiful_pancakes.managers import BeautifulPancakeCreator
+from beautiful_pancakes.pyqt import BeautifulPancakeCreator
+# optional: use pyside
+# from beautiful_pancakes.pyside import BeautifulPancakeCreator
 
 class MainWindow(QMainWindow):
     def __init__(self):
