@@ -41,9 +41,9 @@ as there is no real way to obtain svg data without subclassing the item.  For no
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from beautiful_pancakes.pyqt import BeautifulPancakeCreator
+from beautiful_pancakes.pyqt5 import BeautifulPancakeCreator
 # optional: use pyside
-# from beautiful_pancakes.pyside import BeautifulPancakeCreator
+# from beautiful_pancakes.pyside6 import BeautifulPancakeCreator
 
 class MainWindow(QMainWindow):
     def __init__(self):

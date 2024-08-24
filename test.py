@@ -1,11 +1,11 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from pyqt import BeautifulPancakeCreator
+from pyqt5 import BeautifulPancakeCreator
 
 
 # optional: use pyside
-# from beautiful_pancakes.pyside import BeautifulPancakeCreator
+# from pyside6 import BeautifulPancakeCreator
 
 class MainWindow(QMainWindow):
     def __init__(self):
