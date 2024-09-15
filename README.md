@@ -1,11 +1,21 @@
 ![Beautiful_Pancakes_Logo_Github](https://github.com/user-attachments/assets/082aedaa-4913-4213-8a99-4fca1eb6450c)
 
-# Beautiful Pancakes
-***The official QGraphicsScene custom file writing/reading framework of MP Software based on MPRUN's SceneManager class***
+# Beautiful Pancakes - the QGraphicsScene custom serialization/deserialization package
+
+Beautiful Pancakes can serialize/deserialize your QGraphicsScene to implement basic file
+reading and writing for QGraphicsItems.
+
+## It supports items such as:
+- **QGraphicsRectItem**
+- **QGraphicsLineItem**
+- **QGraphicsEllipseItem**
+- **QGraphicsTextItem**
+- **QGraphicsPixmapItem**
+- **QGraphicsPathItem**
 
 ## Usage
 1. Clone the repository to your project via 
-`https://github.com/ktechhydle/beautiful_pancakes.git` and run `pip install -r requirements.txt`.
+  `https://github.com/ktechhydle/beautiful_pancakes.git` and run `pip install -r requirements.txt`.
 2. Import the `BeautifulPancakeCreator` class and initialize it.
 3. There are four arguments to pass into the initializer:
 
@@ -18,28 +28,20 @@
 5. We offer two versions of `BeautifulPancakeCreator`, PyQt5 and PySide6. Use whatever one your project requires.
 
 ## Methods
-Mentioned above, there are methods for loading, saving, saving as, and more. A full list of methods is 
-listed below:
+  Mentioned above, there are methods for loading, saving, saving as, and more. A full list of methods is 
+  listed below:
 - `reset_to_default_scene()`: Reset the scene (clear scene, reset filename, etc.)
 - `save()`: Save current file
 - `save_as()`: Save file as a new document (triggered automatically if `save` has been called and `filename` is `Untitled`)
 - `load()`: Load file via a file dialog
 - `load_from_file(filename: str)`: Load a file by passing the filename
 
-## Supported Items
-- **QGraphicsRectItem**
-- **QGraphicsLineItem**
-- **QGraphicsEllipseItem**
-- **QGraphicsTextItem**
-- **QGraphicsPixmapItem**
-- **QGraphicsPathItem**
-
-*We will add items such as QGraphicsGroupItem in future updates, you will have to implement QGraphicsSvgItem yourself,
-as there is no real way to obtain svg data without subclassing the item.  For now, `BeautifulPancakeSerializer` and 
+*We will add items such as `QGraphicsGroupItem` in future updates, you will have to implement `QGraphicsSvgItem` yourself,
+as there is no real way to obtain svg data without subclassing the item. For now, `BeautifulPancakeSerializer` and 
 `BeautifulPancakeDeserializer` have methods that can make implementing these items yourself easy.*
 
 ## Full demo
-```
+```python
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -69,5 +71,7 @@ window = MainWindow()
 window.show()
 app.exec()
 ```
+
+This will generate a window with a QGraphicsView/GraphicsScene and open a file dialog asking you where to save the file.
 
 ***We hope you enjoy, and remember to check release notes before updating any clones of this repository***
