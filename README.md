@@ -1,3 +1,5 @@
+![Beautiful_Pancakes_Logo_Github](https://github.com/user-attachments/assets/082aedaa-4913-4213-8a99-4fca1eb6450c)
+
 # Beautiful Pancakes
 ***The official QGraphicsScene custom file writing/reading framework of MP Software based on MPRUN's SceneManager class***
 
